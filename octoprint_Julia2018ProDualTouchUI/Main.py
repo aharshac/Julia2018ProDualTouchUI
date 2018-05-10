@@ -100,10 +100,9 @@ filaments = {"ABS": 220,
              }
 
 
-caliberationPosition = { 'X1': 236, 'Y1': 52,
-                         'X2': 50, 'Y2': 52,
-                         'X3': 145, 'Y3': 215
-                         }
+caliberationPosition = { 'X2': 358, 'Y2': 57,
+                         'X3': 48, 'Y3': 57,
+                         'X1': 204, 'Y1': 365
 
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
@@ -222,28 +221,25 @@ class MainUiClass(QtGui.QMainWindow, mainGUI.Ui_MainWindow):
 
         self.menuCartButton.setDisabled(True)
 
-        self.movie = QtGui.QMovie("templates/img/loading.gif")
-        self.loadingGif.setMovie(self.movie)
-        self.movie.start()
 
         self.movie = QtGui.QMovie("templates/img/loading.gif")
         self.loadingGif.setMovie(self.movie)
         self.movie.start()
 
-        self.movie1 = QtGui.QMovie("templates/img/unlockAll.gif")
-        self.releaseAllLevelingScrewsLabel.setMovie(self.movie1)
-
-        self.movie2 = QtGui.QMovie("templates/img/lockRight.gif")
-        self.turnRightLevelingScrewLabel.setMovie(self.movie2)
-
-        self.movie3 = QtGui.QMovie("templates/img/lockLeft.gif")
-        self.turnLeftLevelingScrewLabel.setMovie(self.movie3)
-
-        self.movie4 = QtGui.QMovie("templates/img/lockCenter.gif")
-        self.turnCenterLevelingScrewLabel.setMovie(self.movie4)
-
-        self.movie5 = QtGui.QMovie("templates/img/heightCaliberation.gif")
-        self.caliberationHeightLabel.setMovie(self.movie5)
+        # self.movie1 = QtGui.QMovie("templates/img/unlockAll.gif")
+        # self.releaseAllLevelingScrewsLabel.setMovie(self.movie1)
+        #
+        # self.movie2 = QtGui.QMovie("templates/img/lockRight.gif")
+        # self.turnRightLevelingScrewLabel.setMovie(self.movie2)
+        #
+        # self.movie3 = QtGui.QMovie("templates/img/lockLeft.gif")
+        # self.turnLeftLevelingScrewLabel.setMovie(self.movie3)
+        #
+        # self.movie4 = QtGui.QMovie("templates/img/lockCenter.gif")
+        # self.turnCenterLevelingScrewLabel.setMovie(self.movie4)
+        #
+        # self.movie5 = QtGui.QMovie("templates/img/heightCaliberation.gif")
+        # self.caliberationHeightLabel.setMovie(self.movie5)
 
     def __init__(self):
         '''
@@ -284,8 +280,9 @@ class MainUiClass(QtGui.QMainWindow, mainGUI.Ui_MainWindow):
         '''
         defines all the Slots and Button events.
         '''
+        self.connect(self.QtSocket, QtCore.SIGNAL('TOOL_OFFSET'), self.getToolOffset)
         self.connect(self.QtSocket, QtCore.SIGNAL('SET_Z_HOME_OFFSET'), self.setZHomeOffset)
-        self.connect(self.QtSocket, QtCore.SIGNAL('Z_HOME_OFFSET'), self.setZHomeOffsestUI)
+        self.connect(self.QtSocket, QtCore.SIGNAL('Z_HOME_OFFSET'), self.getZHomeOffset)
         self.connect(self.QtSocket, QtCore.SIGNAL('ACTIVE_EXTRUDER'), self.setActiveExtruder)
         self.connect(self.QtSocket, QtCore.SIGNAL('TEMPERATURES'), self.updateTemperature)
         self.connect(self.QtSocket, QtCore.SIGNAL('STATUS'), self.updateStatus)
@@ -322,25 +319,31 @@ class MainUiClass(QtGui.QMainWindow, mainGUI.Ui_MainWindow):
             lambda: self.setZHomeOffset(self.nozzleOffsetDoubleSpinBox.value(), True))
         self.nozzleOffsetBackButton.pressed.connect(lambda: self.stackedWidget.setCurrentWidget(self.caliberatePage))
 
-        self.caliberationWizardButton.clicked.connect(self.step1)
-        self.step1NextButton.clicked.connect(self.step2)
-        self.step2NextButton.clicked.connect(self.step3)
-        self.step3NextButton.clicked.connect(self.step4)
-        self.step4NextButton.clicked.connect(self.step5)
-        self.step5NextButton.clicked.connect(self.step6)
-        self.step6NextButton.clicked.connect(self.step7)
-        self.step7NextButton.clicked.connect(self.step8)
-        self.step8DoneButton.clicked.connect(self.doneStep)
+        self.caliberationWizardButton.clicked.connect(lambda: self.stackedWidget.setCurrentWidget(self.caliberationWizardPage))
+        self.caliberationWizardBackButton.clicked.connect(lambda: self.stackedWidget.setCurrentWidget(self.caliberatePage))
+        self.quickCaliberationButton.clicked.connect(lambda: self.quickStep1(False))
+        self.fullCaliberationButton.clicked.connect(lambda: self.quickStep1(True))
+        self.quickStep1NextButton.clicked.connect(self.quickStep2)
+        self.quickStep2NextButton.clicked.connect(self.quickStep3)
+        self.quickStep3NextButton.clicked.connect(self.quickStep4)
+        self.quickStep4NextButton.clicked.connect(self.nozzleHeightStep1)
+        self.nozzleHeightStep1NextButton.clicked.connect(self.nozzleHeightStep2)
+        self.nozzleHeightStep2NextButton.clicked.connect(self.nozzleHeightStep3)
+        self.nozzleHeightStep3NextButton.clicked.connect(self.proceedToFull)
+        self.fullStep1NextButton.clicked.connect(self.fullStep2)
+        self.fullStep2NextButton.clicked.connect(self.fullStep2)
         self.moveZMCaliberateButton.pressed.connect(lambda: octopiclient.jog(z=-0.05))
         self.moveZPCaliberateButton.pressed.connect(lambda: octopiclient.jog(z=0.05))
-        self.step1CancelButton.pressed.connect(self.cancelStep)
-        self.step2CancelButton.pressed.connect(self.cancelStep)
-        self.step3CancelButton.pressed.connect(self.cancelStep)
-        self.step4CancelButton.pressed.connect(self.cancelStep)
-        self.step5CancelButton.pressed.connect(self.cancelStep)
-        self.step6CancelButton.pressed.connect(self.cancelStep)
-        self.step7CancelButton.pressed.connect(self.cancelStep)
-        self.step8CancelButton.pressed.connect(self.cancelStep)
+        self.moveZMT1CaliberateButtonCaliberateButton.pressed.connect(lambda: octopiclient.jog(z=-0.05))
+        self.moveZPTCaliberateButtonCaliberateButton.pressed.connect(lambda: octopiclient.jog(z=0.05))
+        self.moveZMFullCaliberateButton.pressed.connect(lambda: octopiclient.jog(z=-0.05))
+        self.moveZPFullCaliberateButton.pressed.connect(lambda: octopiclient.jog(z=0.05))
+        self.quickStep1CancelButton.pressed.connect(self.cancelStep)
+        self.quickStep2CancelButton.pressed.connect(self.cancelStep)
+        self.quickStep3CancelButton.pressed.connect(self.cancelStep)
+        self.quickStep4CancelButton.pressed.connect(self.cancelStep)
+        self.fullStep1CancelButton.pressed.connect(self.cancelStep)
+        self.fullStep2CancelButton.pressed.connect(self.cancelStep)
 
         # PrintLocationScreen
         self.printLocationScreenBackButton.pressed.connect(lambda: self.stackedWidget.setCurrentWidget(self.MenuPage))
@@ -426,6 +429,8 @@ class MainUiClass(QtGui.QMainWindow, mainGUI.Ui_MainWindow):
         self.restartButton.pressed.connect(self.reboot)
         self.restoreFactoryDefaultsButton.pressed.connect(self.areYouSureFactoryDefaultsMessageBox)
         self.restorePrintSettingsButton.pressed.connect(self.areYouSurerestorePrintSettingsMessageBox)
+        self.moveZPBabyStep.pressed.connect(lambda: octopiclient.gcode(command='M290 Z0.25'))
+        self.moveZMBabyStep.pressed.connect(lambda: octopiclient.gcode(command='M290 Z-0.25'))
 
         # Network Info Page
         self.networkInfoBackButton.pressed.connect(lambda: self.stackedWidget.setCurrentWidget(self.settingsPage))
@@ -1509,99 +1514,7 @@ class MainUiClass(QtGui.QMainWindow, mainGUI.Ui_MainWindow):
 
     ''' +++++++++++++++++++++++++++++++++++Caliberation++++++++++++++++++++++++++++++++ '''
 
-    def touchCaliberation(self):
-        os.system('sudo /home/pi/setenv.sh')
-
-    def reboot(self):
-        '''
-        Displays a message box asking if the user is sure if he wants to reboot
-        '''
-        choice = QtGui.QMessageBox()
-        choice.setWindowFlags(QtCore.Qt.FramelessWindowHint)
-        font = QtGui.QFont()
-        QtGui.QInputMethodEvent
-        font.setFamily(_fromUtf8("Gotham"))
-        font.setPointSize(14)
-        font.setBold(False)
-        font.setUnderline(False)
-        font.setWeight(50)
-        font.setStrikeOut(False)
-        choice.setFont(font)
-        choice.setText("Are you sure you want to Reboot?")
-        # choice.setText(text)
-        choice.setIconPixmap(QtGui.QPixmap(_fromUtf8("templates/img/exclamation-mark.png")))
-        # choice.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint)
-        # choice.setFixedSize(QtCore.QSize(400, 300))
-        choice.setStandardButtons(QtGui.QMessageBox.Yes | QtGui.QMessageBox.No)
-        choice.setStyleSheet(_fromUtf8("\n"
-                                       "QPushButton{\n"
-                                       "     border: 1px solid rgb(87, 87, 87);\n"
-                                       "    background-color: qlineargradient(spread:pad, x1:0, y1:1, x2:0, y2:0.188, stop:0 rgba(180, 180, 180, 255), stop:1 rgba(255, 255, 255, 255));\n"
-                                       "height:70px;\n"
-                                       "width: 150px;\n"
-                                       "border-radius:5px;\n"
-                                       "    font: 14pt \"Gotham\";\n"
-                                       "}\n"
-                                       "\n"
-                                       "QPushButton:pressed {\n"
-                                       "    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,\n"
-                                       "                                      stop: 0 #dadbde, stop: 1 #f6f7fa);\n"
-                                       "}\n"
-                                       "QPushButton:focus {\n"
-                                       "outline: none;\n"
-                                       "}\n"
-                                       "\n"
-                                       ""))
-        retval = choice.exec_()
-        if retval == QtGui.QMessageBox.Yes:
-            os.system('sudo reboot now')
-
-    def shutdown(self):
-        '''
-        Displays a message box asking if the user is sure if he wants to shutdown
-        '''
-        print('Shutting Down. Unable to connect')
-        choice = QtGui.QMessageBox()
-        choice.setWindowFlags(QtCore.Qt.FramelessWindowHint)
-        font = QtGui.QFont()
-        QtGui.QInputMethodEvent
-        font.setFamily(_fromUtf8("Gotham"))
-        font.setPointSize(12)
-        font.setBold(False)
-        font.setUnderline(False)
-        font.setWeight(50)
-        font.setStrikeOut(False)
-        choice.setFont(font)
-        choice.setText("Error, Contact Support. Shut down?")
-        # choice.setText(text)
-        choice.setIconPixmap(QtGui.QPixmap(_fromUtf8("templates/img/exclamation-mark.png")))
-        # choice.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint)
-        # choice.setFixedSize(QtCore.QSize(400, 300))
-        choice.setStandardButtons(QtGui.QMessageBox.Ok)
-        choice.setStyleSheet(_fromUtf8("\n"
-                                       "QPushButton{\n"
-                                       "     border: 1px solid rgb(87, 87, 87);\n"
-                                       "    background-color: qlineargradient(spread:pad, x1:0, y1:1, x2:0, y2:0.188, stop:0 rgba(180, 180, 180, 255), stop:1 rgba(255, 255, 255, 255));\n"
-                                       "height:70px;\n"
-                                       "width: 150px;\n"
-                                       "border-radius:5px;\n"
-                                       "    font: 14pt \"Gotham\";\n"
-                                       "}\n"
-                                       "\n"
-                                       "QPushButton:pressed {\n"
-                                       "    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,\n"
-                                       "                                      stop: 0 #dadbde, stop: 1 #f6f7fa);\n"
-                                       "}\n"
-                                       "QPushButton:focus {\n"
-                                       "outline: none;\n"
-                                       "}\n"
-                                       "\n"
-                                       ""))
-        retval = choice.exec_()
-        if retval == QtGui.QMessageBox.Ok:
-            os.system('sudo shutdown now')
-
-    def setZHomeOffsestUI(self, offset):
+    def getZHomeOffset(self, offset):
         '''
         Sets the spinbox value to have the value of the Z offset from the printer.
         the value is -ve so as to be more intuitive.
@@ -1609,6 +1522,7 @@ class MainUiClass(QtGui.QMainWindow, mainGUI.Ui_MainWindow):
         :return:
         '''
         self.nozzleOffsetDoubleSpinBox.setValue(-float(offset))
+        self.nozzleHomeOffset = offset #update global value of
 
     def setZHomeOffset(self, offset, setOffset=False):
         '''
@@ -1617,131 +1531,140 @@ class MainUiClass(QtGui.QMainWindow, mainGUI.Ui_MainWindow):
         :param offset: the value off the offset to set. is a str is coming from M114, and is float if coming from the nozzleOffsetPage
         :param setOffset: Boolean, is true if the function call is from the nozzleOFfsetPage
         :return:
+
+        #TODO can make this simpler, asset the offset value to string float to begin with instead of doing confitionals
         '''
-        if self.setHomeOffsetBool:
-            octopiclient.gcode(command='M206 Z{}'.format(-float(offset)))
+
+        if self.setHomeOffsetBool: # when this is true, M114 Z value will set stored as Z offset
+            octopiclient.gcode(command='M206 Z{}'.format(-float(offset)))  # Convert the string to float
             self.setHomeOffsetBool = False
             octopiclient.gcode(command='M500')
             # save in EEPROM
-        if setOffset:
+        if setOffset: #When the offset needs to be set from spinbox value
             octopiclient.gcode(command='M206 Z{}'.format(-offset))
             octopiclient.gcode(command='M500')
 
     def nozzleOffset(self):
+        '''
+        Updates the value of M206 Z in the nozzle offset spinbox. Sends M503 so that the pritner returns the value as a websocket calback
+        :return:
+        '''
         octopiclient.gcode(command='M503')
         self.stackedWidget.setCurrentWidget(self.nozzleOffsetPage)
 
-    def step1(self):
+    def getToolOffset(self, M218Data):
+        print M218Data
+        print "Z = " + M218Data[M218Data.index('Z') + 2:].split(' ', 1)[0]
+        print "X = " + M218Data[M218Data.index('X') + 2:].split(' ', 1)[0]
+        print "Y = " + M218Data[M218Data.index('Y') + 2:].split(' ', 1)[0]
+
+    def quickStep1(self, fullCaliberation=False):
         '''
         Shows welcome message.
         Sets Z Home Offset = 0
         Homes to MAX
-        MOves to X=MAX/2, Y=MAX/2, Z=35
         :return:
         '''
-        self.stackedWidget.setCurrentWidget(self.step1Page)
-        octopiclient.gcode(command='M206 Z0')
+        octopiclient.gcode(command='T0') # Set active tool to t0
+        octopiclient.gcode(command='M503') #makes sure internal value of Z offset and Tool offsets are stored before erasing
+        #octopiclient.gcode(command='M502') # load hardcoded default settings, no Z offset, No bed leveling
+        octopiclient.gcode(command='M420 S0')#Dissable mesh bed leveling for good measure
+        self.fullCaliberation = fullCaliberation
+        self.stackedWidget.setCurrentWidget(self.quickStep1Page)
+        octopiclient.gcode(command='M206 Z0') # Sets Z home offset to 0
         octopiclient.home(['x', 'y', 'z'])
-        octopiclient.jog(x=125, y=125, z=35, absolute=True, speed=1500)
 
-    def step2(self):
+
+    def quickStep2(self):
         '''
-        Askes user to release all Leveling Screws
+        leveks first position
         :return:
         '''
-        self.stackedWidget.setCurrentWidget(self.step2Page)
-        self.movie1.start()
+        self.stackedWidget.setCurrentWidget(self.quickStep2Page)
+        octopiclient.jog(x=caliberationPosition['X1'], y=caliberationPosition['Y1'], absolute=True, speed=2000)
+        octopiclient.jog(z=0, absolute=True, speed=1500)
 
-    def step3(self):
+
+    def quickStep3(self):
         '''
-        Goes to first Leveling point, and goes to Z=0
-        Then asks user to tighten right leveling screw
+        levels decond leveling position
         '''
-        self.stackedWidget.setCurrentWidget(self.step3Page)
-        octopiclient.jog(x=caliberationPosition['X1'], y=caliberationPosition['Y1'], absolute=True)
-        octopiclient.jog(z=0, absolute=True)
+        self.stackedWidget.setCurrentWidget(self.quickStep3Page)
+        octopiclient.jog(z=10, absolute=True, speed=1500)
+        octopiclient.jog(x=caliberationPosition['X2'], y=caliberationPosition['Y2'], absolute=True, speed=2000)
+        octopiclient.jog(z=0, absolute=True, speed=1500)
 
-        self.movie1.stop()
 
-        self.movie2.start()
-
-    def step4(self):
+    def quickStep4(self):
         '''
-        Z=5, then go to left leveling position, then z=0
-        Then asks user to tighten left leveling screw
-        :return:
-        '''
-        # sent twice for some reason
-        self.stackedWidget.setCurrentWidget(self.step4Page)
-        octopiclient.jog(z=10, absolute=True)
-        octopiclient.jog(x=caliberationPosition['X2'], y=caliberationPosition['Y2'], absolute=True)
-        octopiclient.jog(z=0, absolute=True)
-        self.movie2.stop()
-
-        self.movie3.start()
-
-    def step5(self):
-        '''
-        Z=5, then go to center leveling position, then z=0
-        Then asks user to tighten center leveling screw
+        levels third leveling position
         :return:
         '''
         # sent twice for some reason
-        self.stackedWidget.setCurrentWidget(self.step5Page)
-        octopiclient.jog(z=10, absolute=True)
-        octopiclient.jog(x=caliberationPosition['X3'], y=caliberationPosition['Y3'], absolute=True)
-        octopiclient.jog(z=0, absolute=True)
-        self.movie3.stop()
+        self.stackedWidget.setCurrentWidget(self.quickStep4Page)
+        octopiclient.jog(z=10, absolute=True, speed=1500)
+        octopiclient.jog(x=caliberationPosition['X3'], y=caliberationPosition['Y3'], absolute=True, speed=2000)
+        octopiclient.jog(z=0, absolute=True, speed=1500)
 
-        self.movie4.start()
+    def nozzleHeightStep1(self):
+        #move Z up
+        #move to a convinied position that is easily acceable
+        #move z to 1mm above bed
+        pass
 
-    def step6(self):
+    def nozzleHeightStep2(self):
+        #move Z to wards bed using buttons
+        pass
+
+    def nozzleHeightStep3(self):
+        #update nozzleHomeOffset value that would be saved later
+        #chaneg to T1
+        #move Z up and down
+        pass
+
+    def proceedToFull(self):
         '''
-        sets z = 5, goes to front position for nozzle height adjustment, then sets z=2
+        decides weather to go to full caliberation of return to caliberation screen
         :return:
         '''
-        self.stackedWidget.setCurrentWidget(self.step6Page)
-        octopiclient.jog(z=10, absolute=True)
-        octopiclient.jog(x=142, y=0, absolute=True)
-        octopiclient.jog(z=2, absolute=True)
-        self.movie4.stop()
+        if self.fullCaliberation == False :
+            self.stackedWidget.setCurrentWidget(self.caliberatePage)
+            octopiclient.gcode(command='M501')  # restore eeprom settings to get Z home offset, mesh bed leveling back
+            octopiclient.home(['x', 'y', 'z'])
+        else :
+            self.fullStep1()
 
-    def step7(self):
+    def fullStep1(self):
         '''
-        Shows the animaion to show how leveling is done
+        levels third leveling position
         :return:
         '''
-        self.stackedWidget.setCurrentWidget(self.step7Page)
+        # sent twice for some reason
+        self.stackedWidget.setCurrentWidget(self.fullStep1Page)
+        octopiclient.home(['x', 'y', 'z'])
+        self.fullLevelingCount = 0
 
-        self.movie5.start()
-
-    def step8(self):
+    def fullStep2(self):
         '''
-        actually jogs the nozzle up depending on user input by a factor of 0.05
+        levels third leveling position
         :return:
         '''
-        self.stackedWidget.setCurrentWidget(self.step8Page)
-        self.movie5.stop()
-        # Jog commads are set in setActions() under caliberation
+        self.pointLabel.setText("Point {} of 9".format(int(self.fullLevelingCount+1)))
+        if self.fullLevelingCount == 0 : #first point
+            octopiclient.gcode(command='G29 S1')
+            self.stackedWidget.setCurrentWidget(self.fullStep2Page)
+            self.fullLevelingCount += 1
 
-    def doneStep(self):
-        '''
-        Sets the new z home offset, and goes back to caliebration page
-        :return:
-        '''
-        self.stackedWidget.setCurrentWidget(self.caliberatePage)
-        self.setHomeOffsetBool = True
-        octopiclient.gcode(command='M114')
-        # set current Z value as -home offset
-
-    def cancelStep(self):
-        self.setLEDFromStatus = True
-        self.movie1.stop()
-        self.movie2.stop()
-        self.movie3.stop()
-        self.movie4.stop()
-        self.movie5.stop()
-        self.stackedWidget.setCurrentWidget(self.caliberatePage)
+        else:
+            # All other poitns
+            if self.fullLevelingCount < 9 :
+                self.stackedWidget.setCurrentWidget(self.fullStep2Page)
+                octopiclient.gcode(command='G29 S2')
+                self.fullLevelingCount += 1
+            else :
+                self.stackedWidget.setCurrentWidget(self.caliberatePage)
+                octopiclient.gcode(command='M206 Z{}'.format(self.nozzleHomeOffset)) #restore Z offset
+                octopiclient.gcode(command='M500') #save mesh and restored Z offset
 
     ''' +++++++++++++++++++++++++++++++++++Keyboard++++++++++++++++++++++++++++++++ '''
     def startKeyboard(self,returnFunction):
@@ -1897,6 +1820,97 @@ class MainUiClass(QtGui.QMainWindow, mainGUI.Ui_MainWindow):
             self.restorePrintDefaults()
 
     ''' +++++++++++++++++++++++++++++++++++ Misc ++++++++++++++++++++++++++++++++ '''
+    def touchCaliberation(self):
+        os.system('sudo /home/pi/setenv.sh')
+
+    def reboot(self):
+        '''
+        Displays a message box asking if the user is sure if he wants to reboot
+        '''
+        choice = QtGui.QMessageBox()
+        choice.setWindowFlags(QtCore.Qt.FramelessWindowHint)
+        font = QtGui.QFont()
+        QtGui.QInputMethodEvent
+        font.setFamily(_fromUtf8("Gotham"))
+        font.setPointSize(14)
+        font.setBold(False)
+        font.setUnderline(False)
+        font.setWeight(50)
+        font.setStrikeOut(False)
+        choice.setFont(font)
+        choice.setText("Are you sure you want to Reboot?")
+        # choice.setText(text)
+        choice.setIconPixmap(QtGui.QPixmap(_fromUtf8("templates/img/exclamation-mark.png")))
+        # choice.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint)
+        # choice.setFixedSize(QtCore.QSize(400, 300))
+        choice.setStandardButtons(QtGui.QMessageBox.Yes | QtGui.QMessageBox.No)
+        choice.setStyleSheet(_fromUtf8("\n"
+                                       "QPushButton{\n"
+                                       "     border: 1px solid rgb(87, 87, 87);\n"
+                                       "    background-color: qlineargradient(spread:pad, x1:0, y1:1, x2:0, y2:0.188, stop:0 rgba(180, 180, 180, 255), stop:1 rgba(255, 255, 255, 255));\n"
+                                       "height:70px;\n"
+                                       "width: 150px;\n"
+                                       "border-radius:5px;\n"
+                                       "    font: 14pt \"Gotham\";\n"
+                                       "}\n"
+                                       "\n"
+                                       "QPushButton:pressed {\n"
+                                       "    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,\n"
+                                       "                                      stop: 0 #dadbde, stop: 1 #f6f7fa);\n"
+                                       "}\n"
+                                       "QPushButton:focus {\n"
+                                       "outline: none;\n"
+                                       "}\n"
+                                       "\n"
+                                       ""))
+        retval = choice.exec_()
+        if retval == QtGui.QMessageBox.Yes:
+            os.system('sudo reboot now')
+
+    def shutdown(self):
+        '''
+        Displays a message box asking if the user is sure if he wants to shutdown
+        '''
+        print('Shutting Down. Unable to connect')
+        choice = QtGui.QMessageBox()
+        choice.setWindowFlags(QtCore.Qt.FramelessWindowHint)
+        font = QtGui.QFont()
+        QtGui.QInputMethodEvent
+        font.setFamily(_fromUtf8("Gotham"))
+        font.setPointSize(12)
+        font.setBold(False)
+        font.setUnderline(False)
+        font.setWeight(50)
+        font.setStrikeOut(False)
+        choice.setFont(font)
+        choice.setText("Error, Contact Support. Shut down?")
+        # choice.setText(text)
+        choice.setIconPixmap(QtGui.QPixmap(_fromUtf8("templates/img/exclamation-mark.png")))
+        # choice.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint)
+        # choice.setFixedSize(QtCore.QSize(400, 300))
+        choice.setStandardButtons(QtGui.QMessageBox.Ok)
+        choice.setStyleSheet(_fromUtf8("\n"
+                                       "QPushButton{\n"
+                                       "     border: 1px solid rgb(87, 87, 87);\n"
+                                       "    background-color: qlineargradient(spread:pad, x1:0, y1:1, x2:0, y2:0.188, stop:0 rgba(180, 180, 180, 255), stop:1 rgba(255, 255, 255, 255));\n"
+                                       "height:70px;\n"
+                                       "width: 150px;\n"
+                                       "border-radius:5px;\n"
+                                       "    font: 14pt \"Gotham\";\n"
+                                       "}\n"
+                                       "\n"
+                                       "QPushButton:pressed {\n"
+                                       "    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,\n"
+                                       "                                      stop: 0 #dadbde, stop: 1 #f6f7fa);\n"
+                                       "}\n"
+                                       "QPushButton:focus {\n"
+                                       "outline: none;\n"
+                                       "}\n"
+                                       "\n"
+                                       ""))
+        retval = choice.exec_()
+        if retval == QtGui.QMessageBox.Ok:
+            os.system('sudo shutdown now')
 
     def pairPhoneApp(self):
         if self.getIP('eth0') != 'Not Connected':
@@ -1988,6 +2002,8 @@ class QtWebsocket(QtCore.QThread):
                     if 'Count' in item:  # can get thris throught the positionUpdate event
                         self.emit(QtCore.SIGNAL('SET_Z_HOME_OFFSET'), item[item.index('Z') + 2:].split(' ', 1)[0],
                                   False)
+                    if 'M218' in item:
+                        self.emit(QtCore.SIGNAL('TOOL_OFFSET'), item[item.index('M218'):])
 
             if data["current"]["state"]["text"]:
                 self.emit(QtCore.SIGNAL('STATUS'), data["current"]["state"]["text"])
