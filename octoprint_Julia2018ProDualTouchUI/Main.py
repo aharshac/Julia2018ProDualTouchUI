@@ -566,6 +566,8 @@ class MainUiClass(QtGui.QMainWindow, mainGUI.Ui_MainWindow):
         if retval == QtGui.QMessageBox.Yes:
             try:
                 octopiclient.resurrect()
+            except:
+                pass
 
     def checkResurrection(self):
         try:
@@ -1595,6 +1597,7 @@ class MainUiClass(QtGui.QMainWindow, mainGUI.Ui_MainWindow):
 
     def setToolOffsetY(self):
         octopiclient.gcode(command='M218 T1 Y{}'.format(self.toolOffsetYDoubleSpinBox.value()))  # restore eeprom settings to get Z home offset, mesh bed leveling back
+        octopiclient.gcode(command='M500')
         octopiclient.gcode(command='M500')
 
     def setToolOffsetZ(self):
