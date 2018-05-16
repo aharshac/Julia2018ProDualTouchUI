@@ -103,6 +103,7 @@ filaments = {"ABS": 220,
 caliberationPosition = { 'X2': 358, 'Y2': 57,
                          'X3': 48, 'Y3': 57,
                          'X1': 204, 'Y1': 365
+                         }
 
 try:
     _fromUtf8 = QtCore.QString.fromUtf8
@@ -317,7 +318,19 @@ class MainUiClass(QtGui.QMainWindow, mainGUI.Ui_MainWindow):
         # the -ve sign is such that its converted to home offset and not just distance between nozzle and bed
         self.nozzleOffsetSetButton.pressed.connect(
             lambda: self.setZHomeOffset(self.nozzleOffsetDoubleSpinBox.value(), True))
+
+        self.toolOffsetXSetButton.pressed.connect(self.setToolOffsetX)
+        self.toolOffsetYSetButton.pressed.connect(self.setToolOffsetY)
+        self.toolOffsetZSetButton.pressed.connect(self.setToolOffsetZ)
+
         self.nozzleOffsetBackButton.pressed.connect(lambda: self.stackedWidget.setCurrentWidget(self.caliberatePage))
+        self.toolOffsetXYBackButton.pressed.connect(lambda: self.stackedWidget.setCurrentWidget(self.caliberatePage))
+        self.toolOffsetZBackButton.pressed.connect(lambda: self.stackedWidget.setCurrentWidget(self.caliberatePage))
+
+        self.toolOffsetXYButton.pressed.connect(self.toolOffsetXY)
+        self.toolOffsetZButton.pressed.connect(self.toolOffsetZ)
+
+
 
         self.caliberationWizardButton.clicked.connect(lambda: self.stackedWidget.setCurrentWidget(self.caliberationWizardPage))
         self.caliberationWizardBackButton.clicked.connect(lambda: self.stackedWidget.setCurrentWidget(self.caliberatePage))
@@ -327,21 +340,24 @@ class MainUiClass(QtGui.QMainWindow, mainGUI.Ui_MainWindow):
         self.quickStep2NextButton.clicked.connect(self.quickStep3)
         self.quickStep3NextButton.clicked.connect(self.quickStep4)
         self.quickStep4NextButton.clicked.connect(self.nozzleHeightStep1)
-        self.nozzleHeightStep1NextButton.clicked.connect(self.nozzleHeightStep2)
-        self.nozzleHeightStep2NextButton.clicked.connect(self.nozzleHeightStep3)
-        self.nozzleHeightStep3NextButton.clicked.connect(self.proceedToFull)
+        # self.nozzleHeightStep1NextButton.clicked.connect(self.nozzleHeightStep2)
+        # self.nozzleHeightStep2NextButton.clicked.connect(self.nozzleHeightStep3)
+        self.nozzleHeightStep1NextButton.clicked.connect(self.proceedToFull)
         self.fullStep1NextButton.clicked.connect(self.fullStep2)
         self.fullStep2NextButton.clicked.connect(self.fullStep2)
-        self.moveZMCaliberateButton.pressed.connect(lambda: octopiclient.jog(z=-0.05))
-        self.moveZPCaliberateButton.pressed.connect(lambda: octopiclient.jog(z=0.05))
-        self.moveZMT1CaliberateButtonCaliberateButton.pressed.connect(lambda: octopiclient.jog(z=-0.05))
-        self.moveZPTCaliberateButtonCaliberateButton.pressed.connect(lambda: octopiclient.jog(z=0.05))
+        # self.moveZMCaliberateButton.pressed.connect(lambda: octopiclient.jog(z=-0.05))
+        # self.moveZPCaliberateButton.pressed.connect(lambda: octopiclient.jog(z=0.05))
+        self.moveZMT1CaliberateButton.pressed.connect(lambda: octopiclient.jog(z=-0.05))
+        self.moveZPT1CaliberateButton.pressed.connect(lambda: octopiclient.jog(z=0.05))
         self.moveZMFullCaliberateButton.pressed.connect(lambda: octopiclient.jog(z=-0.05))
         self.moveZPFullCaliberateButton.pressed.connect(lambda: octopiclient.jog(z=0.05))
         self.quickStep1CancelButton.pressed.connect(self.cancelStep)
         self.quickStep2CancelButton.pressed.connect(self.cancelStep)
         self.quickStep3CancelButton.pressed.connect(self.cancelStep)
         self.quickStep4CancelButton.pressed.connect(self.cancelStep)
+        self.nozzleHeightStep1CancelButton.pressed.connect(self.cancelStep)
+        # self.nozzleHeightStep2CancelButton.pressed.connect(self.cancelStep)
+        # self.nozzleHeightStep3CancelButton.pressed.connect(self.cancelStep)
         self.fullStep1CancelButton.pressed.connect(self.cancelStep)
         self.fullStep2CancelButton.pressed.connect(self.cancelStep)
 
@@ -548,10 +564,15 @@ class MainUiClass(QtGui.QMainWindow, mainGUI.Ui_MainWindow):
                                        ""))
         retval = choice.exec_()
         if retval == QtGui.QMessageBox.Yes:
-            octopiclient.resurrect()
+            try:
+                octopiclient.resurrect()
 
     def checkResurrection(self):
-        resurrection = octopiclient.isResurrectionAvailable()
+        try:
+            resurrection = octopiclient.isResurrectionAvailable()
+        except:
+            resurrection = False
+
         if resurrection["status"] == "available":
             self.printResurrectionMessageBox(resurrection["file"])
 
@@ -1521,8 +1542,8 @@ class MainUiClass(QtGui.QMainWindow, mainGUI.Ui_MainWindow):
         :param offset:
         :return:
         '''
-        self.nozzleOffsetDoubleSpinBox.setValue(-float(offset))
-        self.nozzleHomeOffset = offset #update global value of
+        self.nozzleOffsetDoubleSpinBox.setValue(-float(offset)) #change sign to make it intuitive for user
+        self.nozzleHomeOffset = offset #update global value of nozzle offset stored in MKS
 
     def setZHomeOffset(self, offset, setOffset=False):
         '''
@@ -1534,15 +1555,23 @@ class MainUiClass(QtGui.QMainWindow, mainGUI.Ui_MainWindow):
 
         #TODO can make this simpler, asset the offset value to string float to begin with instead of doing confitionals
         '''
-
+        self.currentZPosition = offset #gets the current z position, used to set new tool offsets. clean this shit up
         if self.setHomeOffsetBool: # when this is true, M114 Z value will set stored as Z offset
             octopiclient.gcode(command='M206 Z{}'.format(-float(offset)))  # Convert the string to float
             self.setHomeOffsetBool = False
+            self.nozzleHomeOffset = -offset
             octopiclient.gcode(command='M500')
             # save in EEPROM
         if setOffset: #When the offset needs to be set from spinbox value
             octopiclient.gcode(command='M206 Z{}'.format(-offset))
             octopiclient.gcode(command='M500')
+
+        if self.setNewToolZOffsetFromCurrentZBool:
+            newToolOffsetZ = float(self.toolOffsetZ) - float(self.currentZPosition)
+            octopiclient.gcode(command='M218 T1 Z{}'.format(newToolOffsetZ))  # restore eeprom settings to get Z home offset, mesh bed leveling back
+            self.setNewToolZOffsetFromCurrentZBool =False
+            octopiclient.gcode(command='M500')  # store eeprom settings to get Z home offset, mesh bed leveling back
+
 
     def nozzleOffset(self):
         '''
@@ -1552,11 +1581,34 @@ class MainUiClass(QtGui.QMainWindow, mainGUI.Ui_MainWindow):
         octopiclient.gcode(command='M503')
         self.stackedWidget.setCurrentWidget(self.nozzleOffsetPage)
 
+    def toolOffsetXY(self):
+        octopiclient.gcode(command='M503')
+        self.stackedWidget.setCurrentWidget(self.toolOffsetXYPage)
+
+    def toolOffsetZ(self):
+        octopiclient.gcode(command='M503')
+        self.stackedWidget.setCurrentWidget(self.toolOffsetZpage)
+
+    def setToolOffsetX(self):
+        octopiclient.gcode(command='M218 T1 X{}'.format(self.toolOffsetXDoubleSpinBox.value()))  # restore eeprom settings to get Z home offset, mesh bed leveling back
+        octopiclient.gcode(command='M500')
+
+    def setToolOffsetY(self):
+        octopiclient.gcode(command='M218 T1 Y{}'.format(self.toolOffsetYDoubleSpinBox.value()))  # restore eeprom settings to get Z home offset, mesh bed leveling back
+        octopiclient.gcode(command='M500')
+
+    def setToolOffsetZ(self):
+        octopiclient.gcode(command='M218 T1 Z{}'.format(self.toolOffsetZDoubleSpinBox.value()))  # restore eeprom settings to get Z home offset, mesh bed leveling back
+        octopiclient.gcode(command='M500')
+
     def getToolOffset(self, M218Data):
-        print M218Data
-        print "Z = " + M218Data[M218Data.index('Z') + 2:].split(' ', 1)[0]
-        print "X = " + M218Data[M218Data.index('X') + 2:].split(' ', 1)[0]
-        print "Y = " + M218Data[M218Data.index('Y') + 2:].split(' ', 1)[0]
+
+        self.toolOffsetZ = M218Data[M218Data.index('Z')+1:].split(' ', 1)[0]
+        self.toolOffsetX = M218Data[M218Data.index('X')+1:].split(' ', 1)[0]
+        self.toolOffsetY = M218Data[M218Data.index('Y')+1:].split(' ', 1)[0]
+        self.toolOffsetXDoubleSpinBox.setValue(float(self.toolOffsetX))
+        self.toolOffsetYDoubleSpinBox.setValue(float(self.toolOffsetY))
+        self.toolOffsetZDoubleSpinBox.setValue(float(self.toolOffsetZ))
 
     def quickStep1(self, fullCaliberation=False):
         '''
@@ -1606,21 +1658,12 @@ class MainUiClass(QtGui.QMainWindow, mainGUI.Ui_MainWindow):
         octopiclient.jog(x=caliberationPosition['X3'], y=caliberationPosition['Y3'], absolute=True, speed=2000)
         octopiclient.jog(z=0, absolute=True, speed=1500)
 
+
     def nozzleHeightStep1(self):
-        #move Z up
-        #move to a convinied position that is easily acceable
-        #move z to 1mm above bed
-        pass
+        self.stackedWidget.setCurrentWidget(self.nozzleHeightStep1Page)
+        octopiclient.jog(z=1, absolute=True, speed=1500)
+        octopiclient.gcode(command='T1')
 
-    def nozzleHeightStep2(self):
-        #move Z to wards bed using buttons
-        pass
-
-    def nozzleHeightStep3(self):
-        #update nozzleHomeOffset value that would be saved later
-        #chaneg to T1
-        #move Z up and down
-        pass
 
     def proceedToFull(self):
         '''
@@ -1628,10 +1671,20 @@ class MainUiClass(QtGui.QMainWindow, mainGUI.Ui_MainWindow):
         :return:
         '''
         if self.fullCaliberation == False :
+
+            self.setNewToolZOffsetFromCurrentZBool = True
+            octopiclient.gcode(command='M114')
             self.stackedWidget.setCurrentWidget(self.caliberatePage)
-            octopiclient.gcode(command='M501')  # restore eeprom settings to get Z home offset, mesh bed leveling back
+            octopiclient.gcode(command='M206 Z{}'.format(self.nozzleHomeOffset))  # restore Z offset
+            octopiclient.gcode(command='M500')  # store eeprom settings to get Z home offset, mesh bed leveling back
+            octopiclient.gcode(command='T0')
             octopiclient.home(['x', 'y', 'z'])
         else :
+            self.setNewToolZOffsetFromCurrentZBool = True
+            octopiclient.gcode(command='M114')
+            self.stackedWidget.setCurrentWidget(self.caliberatePage)
+            octopiclient.gcode(command='M500')  # store eeprom settings to get Z home offset, mesh bed leveling back
+            octopiclient.gcode(command='T0')
             self.fullStep1()
 
     def fullStep1(self):
@@ -1641,6 +1694,7 @@ class MainUiClass(QtGui.QMainWindow, mainGUI.Ui_MainWindow):
         '''
         # sent twice for some reason
         self.stackedWidget.setCurrentWidget(self.fullStep1Page)
+        octopiclient.gcode(command='M206 Z0') # Sets Z home offset to 0
         octopiclient.home(['x', 'y', 'z'])
         self.fullLevelingCount = 0
 
@@ -1665,6 +1719,10 @@ class MainUiClass(QtGui.QMainWindow, mainGUI.Ui_MainWindow):
                 self.stackedWidget.setCurrentWidget(self.caliberatePage)
                 octopiclient.gcode(command='M206 Z{}'.format(self.nozzleHomeOffset)) #restore Z offset
                 octopiclient.gcode(command='M500') #save mesh and restored Z offset
+
+    def cancelStep(self):
+        octopiclient.gcode(command='M501') # restore eeprom settings
+        self.stackedWidget.setCurrentWidget(self.caliberatePage)
 
     ''' +++++++++++++++++++++++++++++++++++Keyboard++++++++++++++++++++++++++++++++ '''
     def startKeyboard(self,returnFunction):
