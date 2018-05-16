@@ -2,7 +2,7 @@ api:
   enabled: true
   key: B508534ED20348F090B4D0AD637D3660
 appearance:
-  name: Fracktal Works Julia 3G
+  name: Fracktal Works Julia 2018 Pro Dual
 devel:
   cache:
     enabled: true
@@ -23,7 +23,7 @@ devel:
       x: 6000
       y: 6000
       z: 200
-    numExtruders: 2
+    numExtruders: 1
     okAfterResend: false
     okWithLinenumber: false
     repetierStyleResends: false
@@ -43,46 +43,28 @@ feature:
 pluginmanager:
   repository: http://plugins.octoprint.org/plugins.json
 plugins:
-  Julia3GFilamentSensor:
-    extruderRunoutTime: '0.6'
-    filamentRunoutTime: '15'
-    minExtrudeTime: '10'
-    sensorCount: '2'
   _disabled:
   - cura
   announcements:
-    channels:
-      _important:
-        read_until: 1509547500
-  discovery:
-    model:
-      description: Julia 3G 3D Printer from Fracktal Works
-      name: Julia 3G
-      number: 3G
-      serial: 00001815
-      url: www.fracktal.in/julia3g
-      vendor: Fracktal Works
-      vendorUrl: www.fracktal.in
-    publicPort: 80
-    upnpUuid: 14fbb42f-66b1-471b-91dc-ca87e4bcbd5b
-    zeroConf:
-      port: 1234
+    _blog: null
+    _important: null
+    _octopi: null
+    _plugins: null
+    _releases: null
+    channels: null
+    read_until: 1523285400
   firmwareupdater:
+    avrdude_avrmcu: m2560
+    avrdude_baudrate: '115200'
     avrdude_path: /usr/bin/avrdude
+    avrdude_programmer: wiring
     check_after_connect: false
+    flash_method: avrdude
   softwareupdate:
-    _config_version: 5
+    _config_version: 6
     check_providers:
-      Julia3GFilament: Julia3GFilament
-      Julia3GFilamentSensor: Julia3GFilamentSensor
-      Julia3GNeopixel: Julia3GNeopixel
-      Julia3GPrintResurrection: Julia3GPrintResurrection
-      Julia3GTouchUI: Julia3GTouchUI
-      filemanager: filemanager
-    checks:
-      octoprint:
-        checkout_folder: /home/pi/OctoPrint
-        prerelease: false
+      Julia2018ExtendedTouchUI: Julia2018ProDualTouchUI
+      firmwareupdater: firmwareupdater
 printerProfiles:
   defaultProfile:
     axes:
@@ -102,24 +84,19 @@ printerProfiles:
     extruder:
       count: 2
       nozzleDiameter: 0.4
-      offsets:
-      - - 0.0
-        - 0.0
-      - - 0.0
-        - 0.0
-      sharedNozzle: false
     heatedBed: true
     id: _default
     model: Generic RepRap Printer
-    name: Default
+    name: Julia 2018 Pro Single
     volume:
       custom_box: false
-      depth: 250.0
+      depth: 400.0
       formFactor: rectangular
-      height: 250.0
+      height: 400.0
       origin: lowerleft
-      width: 250.0
+      width: 400.0
 serial:
+  autoconnect: true
   baudrate: 115200
   port: /dev/ttyUSB0
 server:
@@ -129,9 +106,11 @@ server:
     systemShutdownCommand: sudo shutdown now
   firstRun: true
   host: 127.0.0.1
-  secretKey: WT1JA4JrYuRnA4Fpr1XFNYXReyDGEeFH
+  pluginBlacklist:
+    enabled: false
+  secretKey: 1QM9QG2FnNY6AvLbTZWZ8k6N5L1qKzqk
   seenWizards:
-    corewizard: null
+    corewizard: 3
     cura: null
     softwareupdate: null
 system:
