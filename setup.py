@@ -14,7 +14,7 @@ plugin_package = "octoprint_Julia2018ProDualTouchUI"
 plugin_name = "Octoprint-Julia2018ProDualTouchUI"
 
 # The plugin's version. Can be overwritten within OctoPrint's internal data via __plugin_version__ in the plugin module
-plugin_version = "0.0.3"
+plugin_version = "0.0.4"
 
 # The plugin's description. Can be overwritten within OctoPrint's internal data via __plugin_description__ in the plugin
 # module
@@ -27,7 +27,7 @@ plugin_author = "Vijay Raghav Varada"
 plugin_author_email = "vjvarada@fracktal.in"
 
 # The plugin's homepage URL. Can be overwritten within OctoPrint's internal data via __plugin_url__ in the plugin module
-plugin_url = "https://github.com/FracktalWorks/Julia3GTouchUI"
+plugin_url = "https://github.com/FracktalWorks/JuliaProDualTouchUI"
 
 # The plugin's license. Can be overwritten within OctoPrint's internal data via __plugin_license__ in the plugin module
 plugin_license = "AGPLv3"

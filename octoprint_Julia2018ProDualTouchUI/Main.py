@@ -1620,6 +1620,7 @@ class MainUiClass(QtGui.QMainWindow, mainGUI.Ui_MainWindow):
         Homes to MAX
         :return:
         '''
+        octopiclient.gcode(command='M211 S0')  # Disable software endstop
         octopiclient.gcode(command='T0') # Set active tool to t0
         octopiclient.gcode(command='M503') #makes sure internal value of Z offset and Tool offsets are stored before erasing
         #octopiclient.gcode(command='M502') # load hardcoded default settings, no Z offset, No bed leveling
@@ -1681,6 +1682,7 @@ class MainUiClass(QtGui.QMainWindow, mainGUI.Ui_MainWindow):
             octopiclient.gcode(command='M206 Z{}'.format(self.nozzleHomeOffset))  # restore Z offset
             octopiclient.gcode(command='M500')  # store eeprom settings to get Z home offset, mesh bed leveling back
             octopiclient.gcode(command='T0')
+            octopiclient.gcode(command='M211 S1')  # Disable software endstop
             octopiclient.home(['x', 'y', 'z'])
         else :
             self.setNewToolZOffsetFromCurrentZBool = True
