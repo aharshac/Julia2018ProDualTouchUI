@@ -100,9 +100,9 @@ filaments = {"ABS": 220,
              }
 
 
-caliberationPosition = { 'X2': 358, 'Y2': 57,
-                         'X3': 48, 'Y3': 57,
-                         'X1': 204, 'Y1': 365
+caliberationPosition = { 'X2': 50, 'Y2': 42, #was 57
+                         'X3': 205, 'Y3': 352,  #was 57
+                         'X1': 360, 'Y1': 42  #was 327
                          }
 
 try:
@@ -1620,8 +1620,8 @@ class MainUiClass(QtGui.QMainWindow, mainGUI.Ui_MainWindow):
         Homes to MAX
         :return:
         '''
-        octopiclient.gcode(command='M211 S0')  # Disable software endstop
-        octopiclient.gcode(command='T0') # Set active tool to t0
+        octopiclient.gcode(command='M211 S0')  #Disable software endstop
+        octopiclient.gcode(command='T0') #Set active tool to t0
         octopiclient.gcode(command='M503') #makes sure internal value of Z offset and Tool offsets are stored before erasing
         #octopiclient.gcode(command='M502') # load hardcoded default settings, no Z offset, No bed leveling
         octopiclient.gcode(command='M420 S0')#Dissable mesh bed leveling for good measure
