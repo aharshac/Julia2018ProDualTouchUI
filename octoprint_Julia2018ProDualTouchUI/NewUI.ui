@@ -1717,7 +1717,7 @@ QScrollBar::down-arrow:vertical {
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>478</width>
+         <width>398</width>
          <height>700</height>
         </rect>
        </property>
@@ -4767,7 +4767,7 @@ QPushButton:focus {
        <string notr="true">color: rgb(255, 255, 255);</string>
       </property>
       <property name="text">
-       <string>Loosen or tighten the center back leveling screw while sliding paper under the nozzle, such that the nozzle just scraps against the paper</string>
+       <string>Loosen or tighten the front right leveling screw while sliding paper under the nozzle, such that the nozzle just scraps against the paper</string>
       </property>
       <property name="wordWrap">
        <bool>true</bool>
@@ -4996,7 +4996,7 @@ QPushButton:focus {
        <string notr="true">color: rgb(255, 255, 255);</string>
       </property>
       <property name="text">
-       <string>Repeat the same using the right leveling screw</string>
+       <string>Repeat the same using the front left leveling screw</string>
       </property>
       <property name="wordWrap">
        <bool>true</bool>
@@ -5125,7 +5125,7 @@ QPushButton:focus {
        <string notr="true">color: rgb(255, 255, 255);</string>
       </property>
       <property name="text">
-       <string>Repeat the same using the left leveling screw</string>
+       <string>Repeat the same using the center back leveling screw</string>
       </property>
       <property name="wordWrap">
        <bool>true</bool>
