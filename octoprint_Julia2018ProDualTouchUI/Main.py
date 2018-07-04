@@ -1721,6 +1721,7 @@ class MainUiClass(QtGui.QMainWindow, mainGUI.Ui_MainWindow):
                 octopiclient.gcode(command='G29 S2')
                 self.fullLevelingCount += 1
             else :
+                octopiclient.gcode(command='G29 S2')
                 self.stackedWidget.setCurrentWidget(self.caliberatePage)
                 octopiclient.gcode(command='M206 Z{}'.format(self.nozzleHomeOffset)) #restore Z offset
                 octopiclient.gcode(command='M500') #save mesh and restored Z offset
