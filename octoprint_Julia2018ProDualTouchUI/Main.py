@@ -100,9 +100,9 @@ filaments = {"ABS": 220,
              }
 
 
-caliberationPosition = { 'X2': 50, 'Y2': 42, #was 57
-                         'X3': 205, 'Y3': 352,  #was 57
-                         'X1': 360, 'Y1': 42  #was 327
+caliberationPosition = { 'X2': 30, 'Y2': 42, #was 57
+                         'X3': 185, 'Y3': 352,  #was 57
+                         'X1': 340, 'Y1': 42  #was 327
                          }
 
 try:
