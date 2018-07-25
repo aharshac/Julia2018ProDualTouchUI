@@ -618,14 +618,6 @@ class octoprintAPI:
         headers = {'content-type': 'application/json', 'X-Api-Key': self.apiKey}
         requests.post(url, data=json.dumps(payload), headers=headers)
 
-
-    def toggleFiamentSensor(self,value):
-        url = 'http://' + self.ip + '/plugin/Julia3GFilamentSensor/enable'
-        payload = {'sensorCount': value}
-        headers = {'content-type': 'application/json', 'X-Api-Key': self.apiKey}
-        requests.post(url, data=json.dumps(payload), headers=headers)
-
-
     def getSoftwareUpdateInfo(self):
         '''
         get information from the software update API about software module versions, ad if updates are available
@@ -643,15 +635,32 @@ class octoprintAPI:
         headers = {'content-type': 'application/json', 'X-Api-Key': self.apiKey}
         requests.post(url, data=json.dumps(payload), headers=headers)
 
-    def isResurrectionAvailable(self):
-        url = 'http://' + self.ip + '/plugin/Julia3GPrintResurrection/isAvailable'
+
+    def isFailureDetected(self):
+        url = 'http://' + self.ip + '/plugin/Julia2018PrintRestore/isFailureDetected'
         headers = {'X-Api-Key': self.apiKey}
         response = requests.get(url, headers=headers)
         temp = response.json()
         return temp
-    def resurrect(self):
-        url = 'http://' + self.ip + '/plugin/Julia3GPrintResurrection/resurrect'
+
+    def restore(self, restore = False):
+        url = 'http://' + self.ip + '/plugin/Julia2018PrintRestore/restore'
+        headers = {'content-type': 'application/json', 'X-Api-Key': self.apiKey}
+        payload = {'restore': restore}
+        response = requests.post(url, data=json.dumps(payload), headers=headers)
+        temp = response.json()
+        return temp
+
+    def getPrintRestoreSettings(self):
+        url = 'http://' + self.ip + '/plugin/Julia2018PrintRestore/getSettings'
         headers = {'X-Api-Key': self.apiKey}
         response = requests.get(url, headers=headers)
         temp = response.json()
         return temp
+
+    def savePrintRestoreSettigns(self, restore = False, enabled = True, interval = 1):
+        url = 'http://' + self.ip + '/plugin/Julia2018PrintRestore/saveSettings'
+        headers = {'content-type': 'application/json', 'X-Api-Key': self.apiKey}
+        payload = {'restore': restore, "interval" : interval, "enabled": enabled}
+        requests.post(url, data=json.dumps(payload), headers=headers)
+

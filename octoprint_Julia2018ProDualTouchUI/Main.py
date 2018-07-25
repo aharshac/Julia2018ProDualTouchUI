@@ -294,7 +294,7 @@ class MainUiClass(QtGui.QMainWindow, mainGUI.Ui_MainWindow):
         self.connect(self.QtSocket, QtCore.SIGNAL('UPDATE_LOG'), self.softwareUpdateProgressLog)
         self.connect(self.QtSocket, QtCore.SIGNAL('UPDATE_LOG_RESULT'), self.softwareUpdateResult)
         self.connect(self.QtSocket, QtCore.SIGNAL('UPDATE_FAILED'), self.updateFailed)
-        self.connect(self.QtSocket, QtCore.SIGNAL('CONNECTED'), self.checkResurrection)
+        self.connect(self.QtSocket, QtCore.SIGNAL('CONNECTED'), self.isFailureDetected)
 
         # Button Events:
 
@@ -347,10 +347,10 @@ class MainUiClass(QtGui.QMainWindow, mainGUI.Ui_MainWindow):
         self.fullStep2NextButton.clicked.connect(self.fullStep2)
         # self.moveZMCaliberateButton.pressed.connect(lambda: octopiclient.jog(z=-0.05))
         # self.moveZPCaliberateButton.pressed.connect(lambda: octopiclient.jog(z=0.05))
-        self.moveZMT1CaliberateButton.pressed.connect(lambda: octopiclient.jog(z=-0.05))
-        self.moveZPT1CaliberateButton.pressed.connect(lambda: octopiclient.jog(z=0.05))
-        self.moveZMFullCaliberateButton.pressed.connect(lambda: octopiclient.jog(z=-0.05))
-        self.moveZPFullCaliberateButton.pressed.connect(lambda: octopiclient.jog(z=0.05))
+        self.moveZMT1CaliberateButton.pressed.connect(lambda: octopiclient.jog(z=-0.025))
+        self.moveZPT1CaliberateButton.pressed.connect(lambda: octopiclient.jog(z=0.025))
+        self.moveZMFullCaliberateButton.pressed.connect(lambda: octopiclient.jog(z=-0.025))
+        self.moveZPFullCaliberateButton.pressed.connect(lambda: octopiclient.jog(z=0.025))
         self.quickStep1CancelButton.pressed.connect(self.cancelStep)
         self.quickStep2CancelButton.pressed.connect(self.cancelStep)
         self.quickStep3CancelButton.pressed.connect(self.cancelStep)
@@ -463,6 +463,66 @@ class MainUiClass(QtGui.QMainWindow, mainGUI.Ui_MainWindow):
         self.softwareUpdateBackButton.pressed.connect(lambda: self.stackedWidget.setCurrentWidget(self.settingsPage))
         self.performUpdateButton.pressed.connect(lambda: octopiclient.performSoftwareUpdate())
 
+    ''' +++++++++++++++++++++++++Print Restore+++++++++++++++++++++++++++++++++++ '''
+
+    def printRestoreMessageBox(self, file):
+        '''
+        Displays a message box alerting the user of a filament error
+        '''
+        choice = QtGui.QMessageBox()
+        choice.setWindowFlags(QtCore.Qt.FramelessWindowHint)
+        font = QtGui.QFont()
+        QtGui.QInputMethodEvent
+        font.setFamily(_fromUtf8("Gotham"))
+        font.setPointSize(14)
+        font.setBold(False)
+        font.setUnderline(False)
+        font.setWeight(50)
+        font.setStrikeOut(False)
+        choice.setFont(font)
+        choice.setText(file + " Did not finish, would you like to restore?")
+        choice.setIconPixmap(QtGui.QPixmap(_fromUtf8("templates/img/exclamation-mark.png")))
+        # choice.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint)
+        # choice.setFixedSize(QtCore.QSize(400, 300))
+        choice.setStandardButtons(QtGui.QMessageBox.Yes | QtGui.QMessageBox.No)
+        choice.setStyleSheet(_fromUtf8("QPushButton{\n"
+                                       "     border: 1px solid rgb(87, 87, 87);\n"
+                                       "    background-color: qlineargradient(spread:pad, x1:0, y1:1, x2:0, y2:0.188, stop:0 rgba(180, 180, 180, 255), stop:1 rgba(255, 255, 255, 255));\n"
+                                       "height:70px;\n"
+                                       "width: 200px;\n"
+                                       "border-radius:5px;\n"
+                                       "    font: 14pt \"Gotham\";\n"
+                                       "}\n"
+                                       "\n"
+                                       "QPushButton:pressed {\n"
+                                       "    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,\n"
+                                       "                                      stop: 0 #dadbde, stop: 1 #f6f7fa);\n"
+                                       "}\n"
+                                       "QPushButton:focus {\n"
+                                       "outline: none;\n"
+                                       "}\n"
+
+                                       "\n"
+                                       ""))
+        retval = choice.exec_()
+        if retval == QtGui.QMessageBox.Yes:
+            response = octopiclient.restore(restore=True)
+            if response["status"] == "Successfully Restored":
+                self.miscMessageBox(response["status"])
+            else:
+                self.miscMessageBox(response["status"])
+
+        else:
+            octoprintAPI.restore(restore=False)
+
+    def isFailureDetected(self):
+        try:
+            response = octopiclient.isFailureDetected()
+            if response["canRestore"] == True:
+                self.printRestoreMessageBox(response["file"])
+        except:
+            pass
+
     ''' +++++++++++++++++++++++++Filament Sensor++++++++++++++++++++++++++++++++++++++ '''
 
     def filamentSensorTriggeredMessageBox(self):
@@ -519,64 +579,6 @@ class MainUiClass(QtGui.QMainWindow, mainGUI.Ui_MainWindow):
         else:
             print "FilaSensor OFF"
             octopiclient.toggleFiamentSensor(-1)
-
-    ''' +++++++++++++++++++++++++Print Resurrection+++++++++++++++++++++++++++++++++++ '''
-
-    def printResurrectionMessageBox(self, file):
-        '''
-        Displays a message box alerting the user of a filament error
-        '''
-        print " went into message box"
-        choice = QtGui.QMessageBox()
-        choice.setWindowFlags(QtCore.Qt.FramelessWindowHint)
-        font = QtGui.QFont()
-        QtGui.QInputMethodEvent
-        font.setFamily(_fromUtf8("Gotham"))
-        font.setPointSize(14)
-        font.setBold(False)
-        font.setUnderline(False)
-        font.setWeight(50)
-        font.setStrikeOut(False)
-        choice.setFont(font)
-        choice.setText(file + " Did not finish, would you like to resurrect?")
-        choice.setIconPixmap(QtGui.QPixmap(_fromUtf8("templates/img/exclamation-mark.png")))
-        # choice.setWindowFlags(QtCore.Qt.WindowStaysOnTopHint)
-        # choice.setFixedSize(QtCore.QSize(400, 300))
-        choice.setStandardButtons(QtGui.QMessageBox.Yes | QtGui.QMessageBox.No)
-        choice.setStyleSheet(_fromUtf8("QPushButton{\n"
-                                       "     border: 1px solid rgb(87, 87, 87);\n"
-                                       "    background-color: qlineargradient(spread:pad, x1:0, y1:1, x2:0, y2:0.188, stop:0 rgba(180, 180, 180, 255), stop:1 rgba(255, 255, 255, 255));\n"
-                                       "height:70px;\n"
-                                       "width: 200px;\n"
-                                       "border-radius:5px;\n"
-                                       "    font: 14pt \"Gotham\";\n"
-                                       "}\n"
-                                       "\n"
-                                       "QPushButton:pressed {\n"
-                                       "    background-color: qlineargradient(x1: 0, y1: 0, x2: 0, y2: 1,\n"
-                                       "                                      stop: 0 #dadbde, stop: 1 #f6f7fa);\n"
-                                       "}\n"
-                                       "QPushButton:focus {\n"
-                                       "outline: none;\n"
-                                       "}\n"
-
-                                       "\n"
-                                       ""))
-        retval = choice.exec_()
-        if retval == QtGui.QMessageBox.Yes:
-            try:
-                octopiclient.resurrect()
-            except:
-                pass
-
-    def checkResurrection(self):
-        try:
-            resurrection = octopiclient.isResurrectionAvailable()
-        except:
-            resurrection = False
-
-        if resurrection["status"] == "available":
-            self.printResurrectionMessageBox(resurrection["file"])
 
     ''' +++++++++++++++++++++++++++++++++OTA Update+++++++++++++++++++++++++++++++++++ '''
 
