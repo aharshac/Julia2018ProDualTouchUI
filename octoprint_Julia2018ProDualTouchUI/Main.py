@@ -93,7 +93,7 @@ filaments = {"ABS": 220,
              "PolyCarbonate": 280,
              "XT-Copolymer": 240,
              "FilaFlex": 210,
-             "Nylon": 250,
+             "Nylon": 240,
              "Scaffold": 210,
              "WoodFill": 200,
              "CopperFill": 180
