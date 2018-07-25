@@ -274,7 +274,6 @@ class MainUiClass(QtGui.QMainWindow, mainGUI.Ui_MainWindow):
         self.setActions()
         self.movie.stop()
         self.stackedWidget.setCurrentWidget(MainWindow.homePage)
-        self.checkResurrection()
 
     def setActions(self):
 
