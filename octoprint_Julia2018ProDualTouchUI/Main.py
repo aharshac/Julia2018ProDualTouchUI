@@ -1665,6 +1665,7 @@ class MainUiClass(QtGui.QMainWindow, mainGUI.Ui_MainWindow):
 
 
     def nozzleHeightStep1(self):
+        self.setNewToolZOffsetFromCurrentZBool = True #precautionary, as it wasn't always working
         self.stackedWidget.setCurrentWidget(self.nozzleHeightStep1Page)
         octopiclient.jog(z=1, absolute=True, speed=1500)
         octopiclient.gcode(command='T1')
@@ -1677,7 +1678,6 @@ class MainUiClass(QtGui.QMainWindow, mainGUI.Ui_MainWindow):
         '''
         if self.fullCaliberation == False :
 
-            self.setNewToolZOffsetFromCurrentZBool = True
             octopiclient.gcode(command='M114')
             self.stackedWidget.setCurrentWidget(self.caliberatePage)
             octopiclient.gcode(command='M206 Z{}'.format(self.nozzleHomeOffset))  # restore Z offset
@@ -1686,7 +1686,6 @@ class MainUiClass(QtGui.QMainWindow, mainGUI.Ui_MainWindow):
             octopiclient.gcode(command='M211 S1')  # Disable software endstop
             octopiclient.home(['x', 'y', 'z'])
         else :
-            self.setNewToolZOffsetFromCurrentZBool = True
             octopiclient.gcode(command='M114')
             self.stackedWidget.setCurrentWidget(self.caliberatePage)
             octopiclient.gcode(command='M500')  # store eeprom settings to get Z home offset, mesh bed leveling back
@@ -1728,6 +1727,7 @@ class MainUiClass(QtGui.QMainWindow, mainGUI.Ui_MainWindow):
                 octopiclient.gcode(command='M500') #save mesh and restored Z offset
 
     def cancelStep(self):
+        self.setNewToolZOffsetFromCurrentZBool = False
         octopiclient.gcode(command='M501') # restore eeprom settings
         self.stackedWidget.setCurrentWidget(self.caliberatePage)
 
