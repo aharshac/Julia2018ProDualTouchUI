@@ -438,9 +438,7 @@ class MainUiClass(QtGui.QMainWindow, mainGUI.Ui_MainWindow):
         self.toolToggleTemperatureButton.clicked.connect(self.selectToolTemperature)
         self.toolToggleMotionButton.clicked.connect(self.selectToolMotion)
         self.controlBackButton.pressed.connect(lambda: self.stackedWidget.setCurrentWidget(self.homePage))
-        self.setToolTempButton.pressed.connect(lambda: octopiclient.setToolTemperature({
-            "tool1": self.toolTempSpinBox.value()}) if self.toolToggleTemperatureButton.isChecked() else octopiclient.setToolTemperature(
-            self.toolTempSpinBox.value()))
+        self.setToolTempButton.pressed.connect(self.setToolTemp)
         self.setBedTempButton.pressed.connect(lambda: octopiclient.setBedTemperature(self.bedTempSpinBox.value()))
         self.setFlowRateButton.pressed.connect(lambda: octopiclient.flowrate(self.flowRateSpinBox.value()))
         self.setFeedRateButton.pressed.connect(lambda: octopiclient.feedrate(self.feedRateSpinBox.value()))
@@ -1249,7 +1247,7 @@ class MainUiClass(QtGui.QMainWindow, mainGUI.Ui_MainWindow):
     def unloadFilament(self):
         octopiclient.setToolTemperature({"tool1": filaments[str(
             self.changeFilamentComboBox.currentText())]}) if self.activeExtruder == 1 else octopiclient.setToolTemperature(
-            filaments[str(self.changeFilamentComboBox.currentText())])
+            {"tool0": filaments[str(self.changeFilamentComboBox.currentText())]})
         self.stackedWidget.setCurrentWidget(self.changeFilamentProgressPage)
         self.changeFilamentStatus.setText("Heating Tool {}, Please Wait...".format(str(self.activeExtruder)))
         self.changeFilamentNameOperation.setText("Unloading {}".format(str(self.changeFilamentComboBox.currentText())))
@@ -1260,7 +1258,7 @@ class MainUiClass(QtGui.QMainWindow, mainGUI.Ui_MainWindow):
     def loadFilament(self):
         octopiclient.setToolTemperature({"tool1": filaments[str(
             self.changeFilamentComboBox.currentText())]}) if self.activeExtruder == 1 else octopiclient.setToolTemperature(
-            filaments[str(self.changeFilamentComboBox.currentText())])
+            {"tool0": filaments[str(self.changeFilamentComboBox.currentText())]})
         self.stackedWidget.setCurrentWidget(self.changeFilamentProgressPage)
         self.changeFilamentStatus.setText("Heating Tool {}, Please Wait...".format(str(self.activeExtruder)))
         self.changeFilamentNameOperation.setText("Loading {}".format(str(self.changeFilamentComboBox.currentText())))
@@ -1840,6 +1838,14 @@ class MainUiClass(QtGui.QMainWindow, mainGUI.Ui_MainWindow):
             self.step1Button.setFlat(False)
             self.step10Button.setFlat(True)
             self.step = 10
+
+    def setToolTemp(self):
+        if self.toolToggleTemperatureButton.isChecked():
+            octopiclient.gcode(command='M104 T1 S' + str(self.toolTempSpinBox.value()))
+            # octopiclient.setToolTemperature({"tool1": self.toolTempSpinBox.value()})
+        else:
+            octopiclient.gcode(command='M104 T0 S' + str(self.toolTempSpinBox.value()))
+            # octopiclient.setToolTemperature({"tool0": self.toolTempSpinBox.value()})
 
     def coolDownAction(self):
         ''''

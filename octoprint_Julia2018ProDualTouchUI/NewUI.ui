@@ -173,7 +173,7 @@ QStatusBar::item {
 background-color: rgb(40, 40, 40);</string>
     </property>
     <property name="currentIndex">
-     <number>10</number>
+     <number>30</number>
     </property>
     <widget class="QWidget" name="loadingPage">
      <widget class="QLabel" name="LoadingLabel">
@@ -1717,7 +1717,7 @@ QScrollBar::down-arrow:vertical {
         <rect>
          <x>0</x>
          <y>0</y>
-         <width>398</width>
+         <width>478</width>
          <height>700</height>
         </rect>
        </property>
