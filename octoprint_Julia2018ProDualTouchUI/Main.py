@@ -422,8 +422,8 @@ class MainUiClass(QtGui.QMainWindow, mainGUI.Ui_MainWindow):
         self.moveYMButton.pressed.connect(lambda: octopiclient.jog(y=-self.step))
         self.moveXMButton.pressed.connect(lambda: octopiclient.jog(x=-self.step))
         self.moveXPButton.pressed.connect(lambda: octopiclient.jog(x=self.step))
-        self.moveZPButton.pressed.connect(lambda: octopiclient.jog(z=self.step))
-        self.moveZMButton.pressed.connect(lambda: octopiclient.jog(z=-self.step))
+        self.moveZPButton.pressed.connect(lambda: octopiclient.jog(z=self.step, speed=1000))
+        self.moveZMButton.pressed.connect(lambda: octopiclient.jog(z=-self.step, speed=1000))
         self.extruderButton.pressed.connect(lambda: octopiclient.extrude(self.step))
         self.retractButton.pressed.connect(lambda: octopiclient.extrude(-self.step))
         self.motorOffButton.pressed.connect(lambda: octopiclient.gcode(command='M18'))
@@ -469,8 +469,8 @@ class MainUiClass(QtGui.QMainWindow, mainGUI.Ui_MainWindow):
         self.restartButton.pressed.connect(self.reboot)
         self.restoreFactoryDefaultsButton.pressed.connect(self.areYouSureFactoryDefaultsMessageBox)
         self.restorePrintSettingsButton.pressed.connect(self.areYouSurerestorePrintSettingsMessageBox)
-        self.moveZPBabyStep.pressed.connect(lambda: octopiclient.gcode(command='M290 Z0.25'))
-        self.moveZMBabyStep.pressed.connect(lambda: octopiclient.gcode(command='M290 Z-0.25'))
+        self.moveZPBabyStep.pressed.connect(lambda: octopiclient.gcode(command='M290 Z0.025'))
+        self.moveZMBabyStep.pressed.connect(lambda: octopiclient.gcode(command='M290 Z-0.025'))
         
         # Network settings page
         self.networkInfoButton.pressed.connect(self.networkInfo)

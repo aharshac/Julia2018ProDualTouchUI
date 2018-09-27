@@ -8991,7 +8991,7 @@ QTabBar:focus {
        <enum>QTabWidget::Rounded</enum>
       </property>
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <property name="iconSize">
        <size>
@@ -9673,7 +9673,8 @@ QSpinBox::up-button {
     padding: 2px;
 }
 
-QSpinBox::up-arrow { image: url(./templates/img/arrows.png);
+QSpinBox::up-arrow { 
+image: url(./templates/img/arrows.png);
     width: 40px;
      height: 40px;
 padding: 5px; }
@@ -9695,7 +9696,8 @@ border-bottom-left-radius: 15px;
     padding: 2px;
 }
 
-QSpinBox::down-arrow {image: url(./templates/img/arrows-5.png);
+QSpinBox::down-arrow {
+image: url(./templates/img/arrows-5.png);
     width: 40px;
      height: 40px;
 padding: 5px;
