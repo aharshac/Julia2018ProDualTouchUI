@@ -612,6 +612,7 @@ class MainUiClass(QtGui.QMainWindow, mainGUI_pro_dual.Ui_MainWindow):
             return
 
         triggered_extruder0 = False
+        triggered_extruder1 = False
         triggered_door = False
         pause_print = False
 
@@ -620,6 +621,11 @@ class MainUiClass(QtGui.QMainWindow, mainGUI_pro_dual.Ui_MainWindow):
         elif 'extruder0' in data:
             triggered_extruder0 = data["extruder0"] == 0
 
+        if 'filament2' in data:
+            triggered_extruder1 = data["filament2"] == 0
+        elif 'extruder0' in data:
+            triggered_extruder1 = data["extruder1"] == 0
+
         if 'door' in data:
             triggered_door = data["door"] == 0
         if 'pause_print' in data:
@@ -627,6 +633,10 @@ class MainUiClass(QtGui.QMainWindow, mainGUI_pro_dual.Ui_MainWindow):
 
         if triggered_extruder0:
             if dialog.WarningOk(self, "Filament outage in Extruder 0"):
+                pass
+
+        if triggered_extruder1:
+            if dialog.WarningOk(self, "Filament outage in Extruder 1"):
                 pass
 
         if triggered_door:
@@ -1853,20 +1863,20 @@ class QtWebsocket(QtCore.QThread):
             else:
                 self.emit(QtCore.SIGNAL('PRINT_STATUS'), None)
 
-            def temp(data):
+            def temp(data, tool, temp):
                 try:
-                    return
+                    return data["current"]["temps"][0][tool][temp]
                 except:
                     return 0
 
             if data["current"]["temps"] and len(data["current"]["temps"]) > 0:
                 try:
-                    temperatures = {'tool0Actual': temp(data["current"]["temps"][0]["tool0"]["actual"]),
-                                    'tool0Target': temp(data["current"]["temps"][0]["tool0"]["target"]),
-                                    'tool1Actual': temp(data["current"]["temps"][0]["tool1"]["actual"]),
-                                    'tool1Target': temp(data["current"]["temps"][0]["tool1"]["target"]),
-                                    'bedActual': temp(data["current"]["temps"][0]["bed"]["actual"]),
-                                    'bedTarget': temp(data["current"]["temps"][0]["bed"]["target"])}
+                    temperatures = {'tool0Actual': temp(data, "tool0", "actual"),
+                                    'tool0Target': temp(data, "tool0", "target"),
+                                    'tool1Actual': temp(data, "tool1", "actual"),
+                                    'tool1Target': temp(data, "tool1", "target"),
+                                    'bedActual': temp(data, "bed", "actual"),
+                                    'bedTarget': temp(data, "bed", "target")}
                     self.emit(QtCore.SIGNAL('TEMPERATURES'), temperatures)
                 except KeyError:
                     # temperatures = {'tool0Actual': 0,
