@@ -173,7 +173,7 @@ QStatusBar::item {
 background-color: rgb(40, 40, 40);</string>
     </property>
     <property name="currentIndex">
-     <number>16</number>
+     <number>7</number>
     </property>
     <widget class="QWidget" name="loadingPage">
      <widget class="QLabel" name="LoadingLabel">
@@ -3084,7 +3084,7 @@ QPushButton:focus {
 }</string>
       </property>
       <property name="text">
-       <string>Network info</string>
+       <string>Network Info</string>
       </property>
       <property name="iconSize">
        <size>
